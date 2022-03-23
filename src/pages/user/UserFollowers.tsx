@@ -1,27 +1,28 @@
 import { Box, CircularProgress, Grid } from '@mui/material'
 import React from 'react'
 import { useParams } from 'react-router-dom'
-import RepositoryCard from '../../components/RepositoryCard'
+import UserCard from '../../components/UserCard'
 import { useAppDispatch, useAppSelector } from '../../redux/hooks'
-import { getUserRepositories } from './user.store'
+import { getUserFollowers } from './user.store'
 
-export default function UserRepositories(): JSX.Element {
+export default function UserFollowers(): JSX.Element {
   const params = useParams()
 
   // local states
 
   // redux states
-  const { userRepositories: repositories, isLoading } = useAppSelector(state => state.user)
+  const { userFollowers: followers, isLoading } = useAppSelector(state => state.user)
   const dispatch = useAppDispatch()
-  const getRepositories = React.useCallback(() => {
+  const getFollowers = React.useCallback(() => {
     if(params.username) {
-      dispatch(getUserRepositories(params.username))
+      dispatch(getUserFollowers(params.username))
     }
   }, [params.username]) // eslint-disable-line react-hooks/exhaustive-deps
 
   React.useEffect(() => {
-    getRepositories()
+    getFollowers()
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
   return (
     <Box minHeight="400px">
       {
@@ -32,9 +33,9 @@ export default function UserRepositories(): JSX.Element {
         :
           <Grid container spacing={2}>
             {
-              repositories.map((repo, i) => 
+              followers.map((follower, i) => 
                 <Grid key={i} item xs={6}>
-                  <RepositoryCard repository={repo} />
+                  <UserCard user={follower} />
                 </Grid>
               )
             }

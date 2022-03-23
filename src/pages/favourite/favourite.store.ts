@@ -1,7 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { AppThunk } from "../../redux/store";
 import { User } from "../user/user.store";
-import FavouriteApi from "./favourite.api";
 
 export interface FavouriteState {
   users: Array<User>,
@@ -25,47 +24,50 @@ const slice = createSlice({
     setUsers: (state, action) => {
       state.users = action.payload
       state.isLoading = false
-    },
-    setError: (state, action) => {
-      state.error = action.payload
-      state.isLoading = false
     }
   }
 })
 
-const { startLoading, setUsers, setError } = slice.actions
+const { startLoading, setUsers } = slice.actions
 
 export const getLikedUsers = (): AppThunk => (dispatch) => {
   dispatch(startLoading())
-  FavouriteApi.getLikedUsers()
-    .then((res: User[]) => {
-      console.log(res)
-      dispatch(setUsers(res))
-    })
-    .catch((err: any) => {
-      console.log(err)
-      dispatch(setError(err))
-    })
+  const existedLikedStorage = localStorage.getItem('likedUsers')
+  if (existedLikedStorage) {
+    const likedUsers: User[] = JSON.parse(existedLikedStorage)
+    dispatch(setUsers(likedUsers))
+  } else {
+    dispatch(setUsers([]))
+  }
 }
 
-export const likeUser = (user: User): AppThunk => () => {
-  FavouriteApi.likeUser(user)
-    .then((res: any) => {
-      console.log('Successfully liked user', res)
-    })
-    .catch((err: any) => {
-      console.log('Failed to like user', err)
-    })
+export const likeUser = (user: User): AppThunk => (dispatch) => {
+  const existedLikedStorage = localStorage.getItem('likedUsers')
+  let likedUsers: User[] = []
+  if(existedLikedStorage) {
+    likedUsers = JSON.parse(existedLikedStorage)
+  }
+  const isExist = likedUsers.find(likedUser => likedUser.login === user.login)
+  if (!isExist) {
+    user = Object.assign({}, user)
+    user.is_liked = true
+    likedUsers.push(user)
+    localStorage.setItem('likedUsers', JSON.stringify(likedUsers))
+    dispatch(setUsers(likedUsers))  
+  }
 }
 
-export const unLikeUser = (user: User): AppThunk => () => {
-  FavouriteApi.unLikeUser(user)
-    .then((res: any) => {
-      console.log('Successfully unliked user', res)
-    })
-    .catch((err: any) => {
-      console.log('Failed to unlike user', err)
-    })
+export const unLikeUser = (user: User): AppThunk => (dispatch) => {
+  const existedLikedStorage = localStorage.getItem('likedUsers')
+  let likedUsers: User[] = []
+  if(existedLikedStorage) {
+    likedUsers = JSON.parse(existedLikedStorage)
+  }
+  const unlikedUserIndex = likedUsers.findIndex(likedUser => likedUser.login === user.login)
+
+  likedUsers.splice(unlikedUserIndex, 1)
+  localStorage.setItem('likedUsers', JSON.stringify(likedUsers))
+  dispatch(setUsers(likedUsers))
 }
 
 export default slice.reducer

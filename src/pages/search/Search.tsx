@@ -2,7 +2,7 @@ import React from 'react'
 import _ from 'lodash'
 import { TextField, Box, Grid, Typography, CircularProgress, Pagination } from '@mui/material'
 import { useAppSelector, useAppDispatch } from '../../redux/hooks'
-import { searchUsers, resetSearch } from './search.store'
+import { searchUsers } from './search.store'
 import { setTitle, setHasMenu } from '../../layouts/app-layout/app-layout.store'
 import SearchIcon from '@mui/icons-material/Search'
 import UserCard from '../../components/UserCard'
@@ -32,9 +32,9 @@ export default function Search(): JSX.Element {
   React.useEffect(() => {
     dispatch(setTitle('Search'))
     dispatch(setHasMenu(true))
-    return () => {
-      dispatch(resetSearch())
-    }
+    // return () => {
+    //   dispatch(resetSearch())
+    // }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (

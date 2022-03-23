@@ -1,5 +1,5 @@
 import React, { SetStateAction } from 'react';
-import { NavLink } from "react-router-dom";
+import { NavLink, useLocation } from "react-router-dom";
 import { ThemeProvider, createTheme, PaletteMode, Container, Grid, Box, Switch, Tooltip, Tab, Breakpoint, Typography } from '@mui/material'
 import CssBaseline from "@mui/material/CssBaseline";
 import HomeIcon from '@mui/icons-material/Home'
@@ -18,7 +18,7 @@ interface Menu {
 }
 
 export default function AppLayout({ children }: AppLayoutProps): JSX.Element {
-
+  const location = useLocation()
   const { title, hasMenu } = useAppSelector(state => state.appLayout)
   const [mode, setMode] = React.useState<PaletteMode>('light');
   const [containerWidth, setContainerWidth] = React.useState<Breakpoint>('xs')
@@ -67,7 +67,6 @@ export default function AppLayout({ children }: AppLayoutProps): JSX.Element {
     function handleResize() {
       setContainerWidth((window.innerWidth > 700 && window.innerWidth < 1000) ? 'sm' : 'xs')
     }
-
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
@@ -79,7 +78,7 @@ export default function AppLayout({ children }: AppLayoutProps): JSX.Element {
       label: 'Search'
     },
     {
-      path: '/favourite',
+      path: '/liked',
       icon: <FavoriteIcon fontSize="small"/>,
       label: 'Favourite'
     }
@@ -117,7 +116,7 @@ export default function AppLayout({ children }: AppLayoutProps): JSX.Element {
             </Grid>
           </Grid>
           <Box sx={{
-            height:'90%',
+            height:'95%',
             py: 1
           }}>
             { children }
@@ -136,7 +135,7 @@ export default function AppLayout({ children }: AppLayoutProps): JSX.Element {
                     <NavLink
                       key={i}
                       to={menu.path}
-                      style={({ isActive }) => ( isActive ? { textDecoration: 'none', color: `${theme.palette.primary.dark}` } : { textDecoration: 'none', color: `${theme.palette.text.secondary}` })}
+                      style={({ isActive }) => ( isActive || (i === 0 && location.pathname === '/') ? { textDecoration: 'none', color: `${theme.palette.primary.dark}` } : { textDecoration: 'none', color: `${theme.palette.text.secondary}` })}
                     >
                       <Tab icon={menu.icon} label={menu.label} style={{ width: '100%', opacity: '1', fontSize: '14px', fontWeight: '500', textTransform: 'capitalize' }}/>
                     </NavLink>

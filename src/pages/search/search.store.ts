@@ -48,15 +48,20 @@ export const searchUsers = (keyword: string, page: number, size: number): AppThu
     .then((res: any) => {
       let newUsers: User[] = []
       res?.items.forEach((user: User, index: number) => {
+        const isLiked = checkLikedUser(user)
+        if (isLiked)
+          user.is_liked = true
         newUsers.push(user)
         // i know this is a bad practice, but i can't find any other way to get followers & following number data
         UserApi.getUser(user.login)
           .then((data: User) => {
             const newUser = data
+            const isLiked = checkLikedUser(newUser)
+              if (isLiked)
+                newUser.is_liked = true
+                
             newUsers.splice(index, 1, newUser)
-            if((size - 1) === index) {
-              dispatch(setUsers(newUsers))
-            }
+            dispatch(setUsers([ ...newUsers ]))
           })
           .catch((err: any) => {
             console.log(err)
@@ -69,6 +74,15 @@ export const searchUsers = (keyword: string, page: number, size: number): AppThu
       console.log(err)
       dispatch(setError(err?.message))
     })
+}
+
+function checkLikedUser(user: User) {
+  const existedLikedStorage = localStorage.getItem('likedUsers')
+  let likedUsers: User[] = []
+  if(existedLikedStorage) {
+    likedUsers = JSON.parse(existedLikedStorage)
+  }
+  return likedUsers.find(likedUser => likedUser.login === user.login) ? true : false
 }
 
 export const resetSearch = (): AppThunk => (dispatch) => {
