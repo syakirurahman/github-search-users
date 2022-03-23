@@ -1,6 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { AppThunk } from "../../redux/store";
 import { User } from "../user/user.store";
+import { updateLikedUser } from '../search/search.store'
 
 export interface FavouriteState {
   users: Array<User>,
@@ -51,9 +52,11 @@ export const likeUser = (user: User): AppThunk => (dispatch) => {
   if (!isExist) {
     user = Object.assign({}, user)
     user.is_liked = true
+    dispatch(updateLikedUser(user, true))
+
     likedUsers.push(user)
     localStorage.setItem('likedUsers', JSON.stringify(likedUsers))
-    dispatch(setUsers(likedUsers))  
+    dispatch(setUsers(likedUsers))
   }
 }
 
@@ -64,6 +67,7 @@ export const unLikeUser = (user: User): AppThunk => (dispatch) => {
     likedUsers = JSON.parse(existedLikedStorage)
   }
   const unlikedUserIndex = likedUsers.findIndex(likedUser => likedUser.login === user.login)
+  dispatch(updateLikedUser(user, false))
 
   likedUsers.splice(unlikedUserIndex, 1)
   localStorage.setItem('likedUsers', JSON.stringify(likedUsers))

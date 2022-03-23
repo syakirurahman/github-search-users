@@ -28,13 +28,10 @@ export default function UserCard({ user, searchKeyword }: UserCardProps): JSX.El
     setIsLiked(false)
   }
 
-  const setLikedUser = React.useCallback(() => {
-    if (user.is_liked) 
-      setIsLiked(true)
-  }, [user]) // eslint-disable-line react-hooks/exhaustive-deps
-
   React.useEffect(() => {
-    setLikedUser()
+    if (user.is_liked) {
+      setIsLiked(true)
+    }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
   return (
     <Link to={`/user/${user.login}`} style={{ textDecoration: 'none', color: 'inherit' }}>

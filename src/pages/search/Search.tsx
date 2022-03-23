@@ -2,7 +2,7 @@ import React from 'react'
 import _ from 'lodash'
 import { TextField, Box, Grid, Typography, CircularProgress, Pagination } from '@mui/material'
 import { useAppSelector, useAppDispatch } from '../../redux/hooks'
-import { searchUsers } from './search.store'
+import { searchUsers, resetSearch } from './search.store'
 import { setTitle, setHasMenu } from '../../layouts/app-layout/app-layout.store'
 import SearchIcon from '@mui/icons-material/Search'
 import UserCard from '../../components/UserCard'
@@ -10,18 +10,19 @@ import UserCard from '../../components/UserCard'
 export default function Search(): JSX.Element {
 
   // Local states
-  const [keyword, setKeyword] = React.useState<string>('')
   const [page, setPage] = React.useState<number>(1)
   const size = 10
 
   // redux
   const dispatch = useAppDispatch()
-  const { users, totalCount, isLoading, error } = useAppSelector(states => states.search)
+  const { users, totalCount, isLoading, error, keyword } = useAppSelector(states => states.search)
   const handleSearch = _.debounce((value: string) => {
-    setKeyword(value)
     if (value.length > 2) {
       setPage(1)
       dispatch(searchUsers(value, 1, size))
+    }
+    if (value.length === 0) {
+      dispatch(resetSearch())
     }
   }, 500)
 
@@ -32,16 +33,19 @@ export default function Search(): JSX.Element {
   React.useEffect(() => {
     dispatch(setTitle('Search'))
     dispatch(setHasMenu(true))
-    // return () => {
-    //   dispatch(resetSearch())
-    // }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <Box sx={{
       height: '87%',
     }}>
-      <TextField fullWidth placeholder='Enter GitHub username, i.e. gaearon' onChange={e => handleSearch(e.target.value)}/>
+      <TextField 
+        type="search" 
+        fullWidth 
+        placeholder='Enter GitHub username, i.e. gaearon' 
+        defaultValue={keyword} 
+        onChange={e => handleSearch(e.target.value)}
+      />
       <Box sx={{
         height: '100%',
         overflow: 'auto'

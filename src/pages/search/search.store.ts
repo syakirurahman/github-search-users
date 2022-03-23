@@ -5,6 +5,7 @@ import UserApi from './../user/user.api'
 import { User } from './../user/user.store'
 
 export interface SearchState {
+  keyword: string,
   users: Array<any>,
   totalCount: number,
   isLoading: boolean,
@@ -12,6 +13,7 @@ export interface SearchState {
 }
 
 const initialState: SearchState = {
+  keyword: '',
   users: [],
   totalCount: 0,
   isLoading: false,
@@ -22,6 +24,9 @@ const slice = createSlice({
   name: 'search',
   initialState,
   reducers: {
+    setKeyword: (state, action) => {
+      state.keyword = action.payload
+    },
     startLoading: state => {
       state.isLoading = true
     },
@@ -39,9 +44,10 @@ const slice = createSlice({
   }
 })
 
-const { startLoading, setUsers, setTotalCount, setError } = slice.actions
+const { setKeyword, startLoading, setUsers, setTotalCount, setError } = slice.actions
 
 export const searchUsers = (keyword: string, page: number, size: number): AppThunk => async (dispatch) => {
+  dispatch(setKeyword(keyword))
   dispatch(setUsers([]))
   dispatch(startLoading())
   SearchApi.searchUsers(keyword, page, size)
@@ -59,7 +65,7 @@ export const searchUsers = (keyword: string, page: number, size: number): AppThu
             const isLiked = checkLikedUser(newUser)
               if (isLiked)
                 newUser.is_liked = true
-                
+
             newUsers.splice(index, 1, newUser)
             dispatch(setUsers([ ...newUsers ]))
           })
@@ -76,6 +82,16 @@ export const searchUsers = (keyword: string, page: number, size: number): AppThu
     })
 }
 
+export const updateLikedUser = (user: User, isLiked: boolean): AppThunk => (dispatch, getStates) => {
+  const users: User[] = JSON.parse(JSON.stringify(getStates().search.users))
+  const likedUser = users.find(u => u.login === user.login)
+
+  if(likedUser)
+    likedUser.is_liked = isLiked
+
+  dispatch(setUsers(users))
+}
+
 function checkLikedUser(user: User) {
   const existedLikedStorage = localStorage.getItem('likedUsers')
   let likedUsers: User[] = []
@@ -86,6 +102,7 @@ function checkLikedUser(user: User) {
 }
 
 export const resetSearch = (): AppThunk => (dispatch) => {
+  dispatch(setKeyword(''))
   dispatch(setUsers([]))
   dispatch(setError(null))
   dispatch(setTotalCount(0))

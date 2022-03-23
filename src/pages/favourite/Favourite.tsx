@@ -5,6 +5,7 @@ import { getLikedUsers } from './favourite.store'
 import { Box, CircularProgress, Typography, Grid, } from '@mui/material'
 import UserCard from '../../components/UserCard'
 import GroupIcon from '@mui/icons-material/Group'
+import { User } from '../user/user.store'
 
 export default function Favorite(): JSX.Element {
 
@@ -38,8 +39,8 @@ export default function Favorite(): JSX.Element {
               <Box paddingY={1}>
                 <Grid container spacing={2} paddingY={1} alignItems="start">
                   {
-                    users.map((user, i) => 
-                      <Grid key={i} item xs={6}>
+                    users.map((user: User) => 
+                      <Grid key={user.login} item xs={6}>
                         <UserCard user={user} />
                       </Grid>
                     )
