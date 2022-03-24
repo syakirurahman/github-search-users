@@ -38,3 +38,11 @@ https://oddle-github-test-syakir.herokuapp.com/
 3. Redux // as state management library
 4. VScode // as IDE / code editor
 5. Heroku // as Deployment tool & hosting
+
+## Note
+
+If you run the project and the github API responded with 403, it means you reach the API limit. You can solve this by changing the internet connection / IP and try again.
+This project make a lot of API request in a loop to meet the requirements (get followers & following data). I know this is a bad practice, but i can't find a better way to do it.
+1. Search function can call up to 11 github API (1 search API + 10 user detail API) requests on a search
+2. View user followers & followings can call up to 31 github API (1 followers list API & 30 user detail API) requests
+3. The API loop can be removed by removing / commenting / updating the codes in src/pages/search/search.store.js (line 67) & src/pages/user/user.store.js (line 142 & 176)
