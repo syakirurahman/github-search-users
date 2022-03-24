@@ -6,6 +6,7 @@ import { User } from './../user/user.store'
 
 export interface SearchState {
   keyword: string,
+  page: number,
   users: Array<any>,
   totalCount: number,
   isLoading: boolean,
@@ -14,6 +15,7 @@ export interface SearchState {
 
 const initialState: SearchState = {
   keyword: '',
+  page: 1,
   users: [],
   totalCount: 0,
   isLoading: false,
@@ -26,6 +28,9 @@ const slice = createSlice({
   reducers: {
     setKeyword: (state, action) => {
       state.keyword = action.payload
+    },
+    setPage: (state, action) => {
+      state.page = action.payload
     },
     startLoading: state => {
       state.isLoading = true
@@ -44,10 +49,11 @@ const slice = createSlice({
   }
 })
 
-const { setKeyword, startLoading, setUsers, setTotalCount, setError } = slice.actions
+const { setKeyword, setPage, startLoading, setUsers, setTotalCount, setError } = slice.actions
 
 export const searchUsers = (keyword: string, page: number, size: number): AppThunk => async (dispatch) => {
   dispatch(setKeyword(keyword))
+  dispatch(setPage(page))
   dispatch(setUsers([]))
   dispatch(startLoading())
   SearchApi.searchUsers(keyword, page, size)

@@ -9,13 +9,15 @@ import UserCard from '../../components/UserCard'
 
 export default function Search(): JSX.Element {
 
-  // Local states
-  const [page, setPage] = React.useState<number>(1)
-  const size = 10
 
   // redux
   const dispatch = useAppDispatch()
-  const { users, totalCount, isLoading, error, keyword } = useAppSelector(states => states.search)
+  const { users, totalCount, isLoading, error, keyword, page: pageStore } = useAppSelector(states => states.search)
+
+  // Local states
+  const [page, setPage] = React.useState<number>(pageStore)
+  const size = 10
+
   const handleSearch = _.debounce((value: string) => {
     if (value.length > 2) {
       setPage(1)
@@ -29,7 +31,7 @@ export default function Search(): JSX.Element {
   const handlePageChange = (value: number) => {
     setPage(value)
     dispatch(searchUsers(keyword, value, size))
-  }  
+  }
   React.useEffect(() => {
     dispatch(setTitle('Search'))
     dispatch(setHasMenu(true))
