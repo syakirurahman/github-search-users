@@ -133,28 +133,33 @@ export const getUserFollowers = (username: string): AppThunk => (dispatch) => {
   UserApi.getUserFollowers(username)
     .then((data: User[]) => {
       let newUsers: User[] = []
-      data.forEach((user: User, index: number) => {
-        const isLiked = checkLikedUser(user)
-          if (isLiked)
-            user.is_liked = true
-          newUsers.push(user)
-          
-          // again, this is a bad practice
-          UserApi.getUser(user.login)
-            .then((data: User) => {
-              const newUser = data
-              const isLiked = checkLikedUser(newUser)
-                if (isLiked)
-                  newUser.is_liked = true
+      if(data.length > 0) {
+        data.forEach((user: User, index: number) => {
+          const isLiked = checkLikedUser(user)
+            if (isLiked)
+              user.is_liked = true
+            newUsers.push(user)
+            
+            // again, this is a bad practice
+            UserApi.getUser(user.login)
+              .then((data: User) => {
+                const newUser = data
+                const isLiked = checkLikedUser(newUser)
+                  if (isLiked)
+                    newUser.is_liked = true
 
-              newUsers.splice(index, 1, newUser)
-              dispatch(setUserFollowers([ ...newUsers ]))
-            })
-            .catch((err: any) => {
-              console.log(err)
-              dispatch(setError(err?.message))
-            })
-      });
+                newUsers.splice(index, 1, newUser)
+                dispatch(setUserFollowers([ ...newUsers ]))
+              })
+              .catch((err: any) => {
+                console.log(err)
+                dispatch(setError(err?.message))
+              })
+
+        });
+      } else {
+        dispatch(setUserFollowers([]))
+      }
     })
     .catch((err: any) => {
       console.log(err)
@@ -167,28 +172,32 @@ export const getUserFollowing = (username: string): AppThunk => (dispatch) => {
   UserApi.getUserFollowing(username)
     .then((data: User[]) => {
       let newUsers: User[] = []
-      data.forEach((user: User, index: number) => {
-        const isLiked = checkLikedUser(user)
-          if (isLiked)
-            user.is_liked = true
-          newUsers.push(user)
-          
-          // again, this is a bad practice
-          UserApi.getUser(user.login)
-            .then((data: User) => {
-              const newUser = data
-              const isLiked = checkLikedUser(newUser)
-                if (isLiked)
-                  newUser.is_liked = true
+      if (data.length > 0) {
+        data.forEach((user: User, index: number) => {
+          const isLiked = checkLikedUser(user)
+            if (isLiked)
+              user.is_liked = true
+            newUsers.push(user)
+            
+            // again, this is a bad practice
+            UserApi.getUser(user.login)
+              .then((data: User) => {
+                const newUser = data
+                const isLiked = checkLikedUser(newUser)
+                  if (isLiked)
+                    newUser.is_liked = true
 
-              newUsers.splice(index, 1, newUser)
-              dispatch(setUserFollowing([ ...newUsers ]))
-            })
-            .catch((err: any) => {
-              console.log(err)
-              dispatch(setError(err?.message))
-            })
-      });
+                newUsers.splice(index, 1, newUser)
+                dispatch(setUserFollowing([ ...newUsers ]))
+              })
+              .catch((err: any) => {
+                console.log(err)
+                dispatch(setError(err?.message))
+              })
+        });   
+      } else {
+        dispatch(setUserFollowing([]))
+      }
     })
     .catch((err: any) => {
       console.log(err)
