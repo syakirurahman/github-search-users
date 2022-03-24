@@ -76,12 +76,12 @@ const HighlightedText = ({text = '', highlight = ''}: { text: string, highlight:
     text = text.substring(0, 13) + '..'
   }
   if (!highlight.trim()) {
-    return <span>{text}</span>
+    return <span style={{ whiteSpace: 'nowrap'}}>{text}</span>
   }
   const regex = new RegExp(`(${_.escapeRegExp(highlight)})`, 'gi')
   const parts = text.split(regex)
   return (
-    <span>
+    <span style={{ whiteSpace: 'nowrap'}}>
        {parts.filter(part => part).map((part, i) => (
            regex.test(part) ? <strong key={i}>{part}</strong> : <span key={i}>{part}</span>
        ))}

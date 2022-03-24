@@ -2,7 +2,7 @@ import { createSlice } from "@reduxjs/toolkit"
 import { AppThunk } from "../../redux/store"
 import SearchApi from './search.api'
 import UserApi from './../user/user.api'
-import { User } from './../user/user.store'
+import { User, checkLikedUser } from './../user/user.store'
 
 export interface SearchState {
   keyword: string,
@@ -77,6 +77,7 @@ export const searchUsers = (keyword: string, page: number, size: number): AppThu
           })
           .catch((err: any) => {
             console.log(err)
+            dispatch(setError(err?.message))
           })
 
       })
@@ -96,15 +97,6 @@ export const updateLikedUser = (user: User, isLiked: boolean): AppThunk => (disp
     likedUser.is_liked = isLiked
 
   dispatch(setUsers(users))
-}
-
-function checkLikedUser(user: User) {
-  const existedLikedStorage = localStorage.getItem('likedUsers')
-  let likedUsers: User[] = []
-  if(existedLikedStorage) {
-    likedUsers = JSON.parse(existedLikedStorage)
-  }
-  return likedUsers.find(likedUser => likedUser.login === user.login) ? true : false
 }
 
 export const resetSearch = (): AppThunk => (dispatch) => {

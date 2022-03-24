@@ -111,7 +111,7 @@ export const getUserDetail = (username: string): AppThunk => (dispatch, getState
       })
       .catch((err: any) => {
         console.log(err)
-        dispatch(setError(err))
+        dispatch(setError(err?.message?.message))
       })
   }
 }
@@ -124,7 +124,7 @@ export const getUserRepositories = (username: string): AppThunk => (dispatch) =>
     })
     .catch((err: any) => {
       console.log(err)
-      dispatch(setError(err))
+      dispatch(setError(err?.message))
     })
 }
 
@@ -132,11 +132,33 @@ export const getUserFollowers = (username: string): AppThunk => (dispatch) => {
   dispatch(startLoading())
   UserApi.getUserFollowers(username)
     .then((data: User[]) => {
-      dispatch(setUserFollowers(data))
+      let newUsers: User[] = []
+      data.forEach((user: User, index: number) => {
+        const isLiked = checkLikedUser(user)
+          if (isLiked)
+            user.is_liked = true
+          newUsers.push(user)
+          
+          // again, this is a bad practice
+          UserApi.getUser(user.login)
+            .then((data: User) => {
+              const newUser = data
+              const isLiked = checkLikedUser(newUser)
+                if (isLiked)
+                  newUser.is_liked = true
+
+              newUsers.splice(index, 1, newUser)
+              dispatch(setUserFollowers([ ...newUsers ]))
+            })
+            .catch((err: any) => {
+              console.log(err)
+              dispatch(setError(err?.message))
+            })
+      });
     })
     .catch((err: any) => {
       console.log(err)
-      dispatch(setError(err))
+      dispatch(setError(err?.message))
     })
 }
 
@@ -144,13 +166,43 @@ export const getUserFollowing = (username: string): AppThunk => (dispatch) => {
   dispatch(startLoading())
   UserApi.getUserFollowing(username)
     .then((data: User[]) => {
-      dispatch(setUserFollowing(data))
+      let newUsers: User[] = []
+      data.forEach((user: User, index: number) => {
+        const isLiked = checkLikedUser(user)
+          if (isLiked)
+            user.is_liked = true
+          newUsers.push(user)
+          
+          // again, this is a bad practice
+          UserApi.getUser(user.login)
+            .then((data: User) => {
+              const newUser = data
+              const isLiked = checkLikedUser(newUser)
+                if (isLiked)
+                  newUser.is_liked = true
+
+              newUsers.splice(index, 1, newUser)
+              dispatch(setUserFollowing([ ...newUsers ]))
+            })
+            .catch((err: any) => {
+              console.log(err)
+              dispatch(setError(err?.message))
+            })
+      });
     })
     .catch((err: any) => {
       console.log(err)
-      dispatch(setError(err))
+      dispatch(setError(err?.message))
     })
 }
 
+export const checkLikedUser = (user: User) => {
+  const existedLikedStorage = localStorage.getItem('likedUsers')
+  let likedUsers: User[] = []
+  if(existedLikedStorage) {
+    likedUsers = JSON.parse(existedLikedStorage)
+  }
+  return likedUsers.find(likedUser => likedUser.login === user.login) ? true : false
+}
 
 export default slice.reducer
