@@ -8,7 +8,6 @@ import UserFollowers from './pages/user/UserFollowers';
 import UserFollowing from './pages/user/UserFollowing';
 
 function App() {
-  console.log(process.env)
   return (
     <div className="App">
       <Router>
