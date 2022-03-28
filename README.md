@@ -27,9 +27,17 @@ Your app is ready to be deployed!
 
 See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
 
+## Environment Variables
+
+`REACT_APP_GITHUB_PERSONAL_ACCESS_TOKEN=<your-github-personal-access-token>`
+
+Before you run the project, make sure you set your github personal access token to authenticate the github API.
+You can generate your github personal access token in your github account setting page (developer settings > personal access tokens)
+
 ## Live demo 
 
 https://oddle-github-test-syakir.herokuapp.com/
+
 
 ## Tools & Libraries
 
