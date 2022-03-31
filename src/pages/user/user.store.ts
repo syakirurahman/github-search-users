@@ -1,6 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit"
 import { AppThunk } from "../../redux/store"
 import UserApi from "./user.api"
+import { getLikedUsers } from "../favourite/favourite.store"
 
 export interface User {
 	id: number,
@@ -132,31 +133,26 @@ export const getUserFollowers = (username: string): AppThunk => (dispatch) => {
   dispatch(startLoading())
   UserApi.getUserFollowers(username)
     .then((data: User[]) => {
-      let newUsers: User[] = []
+      let userPromises: Promise<any>[] = []
+      let users: User[] = []
       if(data.length > 0) {
-        data.forEach((user: User, index: number) => {
-          const isLiked = checkLikedUser(user)
-            if (isLiked)
-              user.is_liked = true
-            newUsers.push(user)
-            
-            // again, this is a bad practice
-            UserApi.getUser(user.login)
-              .then((data: User) => {
-                const newUser = data
-                const isLiked = checkLikedUser(newUser)
-                  if (isLiked)
-                    newUser.is_liked = true
-
-                newUsers.splice(index, 1, newUser)
-                dispatch(setUserFollowers([ ...newUsers ]))
-              })
-              .catch((err: any) => {
-                console.log(err)
-                dispatch(setError(err?.message))
-              })
-
-        });
+        data.forEach((user: User) => {
+          users.push(user)
+          userPromises.push(UserApi.getUser(user.login))
+        })
+        Promise.allSettled(userPromises)
+          .then(results => {
+            results.forEach((result, index) => {
+              if (result.status === 'fulfilled') {
+                const newUser = result.value
+                users.splice(index, 1, newUser)
+              } else {
+                console.log('failed to fetch user detail: ' + data[index], result.reason)
+              }
+            })
+            const markedLikedUsers = dispatch(markLikedUsers(users))
+            dispatch(setUserFollowers(markedLikedUsers))
+          })
       } else {
         dispatch(setUserFollowers([]))
       }
@@ -171,30 +167,27 @@ export const getUserFollowing = (username: string): AppThunk => (dispatch) => {
   dispatch(startLoading())
   UserApi.getUserFollowing(username)
     .then((data: User[]) => {
-      let newUsers: User[] = []
-      if (data.length > 0) {
-        data.forEach((user: User, index: number) => {
-          const isLiked = checkLikedUser(user)
-            if (isLiked)
-              user.is_liked = true
-            newUsers.push(user)
+      let userPromises: Promise<any>[] = []
+      let users: User[] = []
+      if(data.length > 0) {
+        data.forEach((user: User) => {
+          users.push(user)
+          userPromises.push(UserApi.getUser(user.login))
+        })
+        Promise.allSettled(userPromises)
+          .then(results => {
+            results.forEach((result, index) => {
+              if (result.status === 'fulfilled') {
+                const newUser = result.value
+                users.splice(index, 1, newUser)
+              } else {
+                console.log('failed to fetch user detail ' + data[index], result.reason)
+              }
+            })
             
-            // again, this is a bad practice
-            UserApi.getUser(user.login)
-              .then((data: User) => {
-                const newUser = data
-                const isLiked = checkLikedUser(newUser)
-                  if (isLiked)
-                    newUser.is_liked = true
-
-                newUsers.splice(index, 1, newUser)
-                dispatch(setUserFollowing([ ...newUsers ]))
-              })
-              .catch((err: any) => {
-                console.log(err)
-                dispatch(setError(err?.message))
-              })
-        });   
+            const markedLikedUsers = dispatch(markLikedUsers(users))
+            dispatch(setUserFollowing(markedLikedUsers))
+          })
       } else {
         dispatch(setUserFollowing([]))
       }
@@ -205,13 +198,16 @@ export const getUserFollowing = (username: string): AppThunk => (dispatch) => {
     })
 }
 
-export const checkLikedUser = (user: User) => {
-  const existedLikedStorage = localStorage.getItem('likedUsers')
-  let likedUsers: User[] = []
-  if(existedLikedStorage) {
-    likedUsers = JSON.parse(existedLikedStorage)
-  }
-  return likedUsers.find(likedUser => likedUser.login === user.login) ? true : false
+export const markLikedUsers = (users: User[]): AppThunk<User[]> => (dispatch, getStates) => {
+  dispatch(getLikedUsers())
+  const likedUsers = getStates().favourite.users
+  const copiedUsers = JSON.parse(JSON.stringify(users)) // copy users array just in case it's redux state & immutable
+  return copiedUsers.map(user => {
+    const likedUser = likedUsers.find(likedUser => likedUser.login === user.login)
+    if (likedUser)
+      user.is_liked = true
+    return user
+  })
 }
 
 export default slice.reducer

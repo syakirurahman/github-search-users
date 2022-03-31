@@ -2,7 +2,7 @@ import { createSlice } from "@reduxjs/toolkit"
 import { AppThunk } from "../../redux/store"
 import SearchApi from './search.api'
 import UserApi from './../user/user.api'
-import { User, checkLikedUser } from './../user/user.store'
+import { User, markLikedUsers } from './../user/user.store'
 
 export interface SearchState {
   keyword: string,
@@ -58,30 +58,28 @@ export const searchUsers = (keyword: string, page: number, size: number): AppThu
   dispatch(startLoading())
   SearchApi.searchUsers(keyword, page, size)
     .then((res: any) => {
-      let newUsers: User[] = []
+      let userPromises: Promise<any>[] = []
+      let users: User[] = []
       if(res?.items.length > 0) {
-        res?.items.forEach((user: User, index: number) => {
-          const isLiked = checkLikedUser(user)
-          if (isLiked)
-            user.is_liked = true
-          newUsers.push(user)
-          // i know this is a bad practice, but i can't find any other way to get followers & following number data
-          UserApi.getUser(user.login)
-            .then((data: User) => {
-              const newUser = data
-              const isLiked = checkLikedUser(newUser)
-                if (isLiked)
-                  newUser.is_liked = true
-
-              newUsers.splice(index, 1, newUser)
-              dispatch(setUsers([ ...newUsers ]))
-            })
-            .catch((err: any) => {
-              console.log(err)
-              dispatch(setError(err?.message))
-            })
-
+        res?.items.forEach((user: User) => {
+          users.push(user)
+          userPromises.push(UserApi.getUser(user.login))
         })
+        Promise.allSettled(userPromises)
+          .then(results => {
+            results.forEach((result, index) => {
+              if (result.status === 'fulfilled') {
+                const newUser = result.value
+                users.splice(index, 1, newUser)
+              } else {
+                console.log('failed to fetch user detail: ' + res?.items[index], result.reason)
+              }
+            })
+            
+            const markedLikedUsers = dispatch(markLikedUsers(users))
+            dispatch(setUsers(markedLikedUsers))
+          })
+
       } else {
         dispatch(setUsers([]))
       }

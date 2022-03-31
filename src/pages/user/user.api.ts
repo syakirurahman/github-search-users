@@ -1,13 +1,13 @@
 import { BASE_URL, BASE_REQUEST } from './../../utils/base.api'
 
 const UserApi: any = {
-  getUser: (username: string) => 
+  getUser: (username: string): Promise<any> => 
     BASE_REQUEST.get(`${BASE_URL}/users/${username}`),
-  getUserRepositories: (username: string) =>
+  getUserRepositories: (username: string): Promise<any> =>
     BASE_REQUEST.get(`${BASE_URL}/users/${username}/repos`),
-  getUserFollowers: (username: string) =>
+  getUserFollowers: (username: string): Promise<any> =>
     BASE_REQUEST.get(`${BASE_URL}/users/${username}/followers`),
-  getUserFollowing: (username: string) =>
+  getUserFollowing: (username: string): Promise<any> =>
     BASE_REQUEST.get(`${BASE_URL}/users/${username}/following`)
 
 }
